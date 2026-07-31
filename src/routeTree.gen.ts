@@ -9,40 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authenticated.appointments'
-import { Route as AuthenticatedAvailabilityRouteImport } from './routes/_authenticated.availability'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
-import { Route as AuthenticatedPatientsRouteImport } from './routes/_authenticated.patients'
-import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated.profile'
-import { Route as AuthenticatedPatientsIdRouteImport } from './routes/_authenticated.patients.$id'
+import { Route as PublicRouteImport } from './routes/_public'
+import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authenticated/appointments'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedPatientsRouteImport } from './routes/_authenticated/patients'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedAiToolsIndexRouteImport } from './routes/_authenticated/ai-tools/index'
+import { Route as AuthenticatedAiToolsFattyLiverAssessmentRouteImport } from './routes/_authenticated/ai-tools/fatty-liver-assessment'
+import { Route as AuthenticatedAiToolsFattyLiverScanRouteImport } from './routes/_authenticated/ai-tools/fatty-liver-scan'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const PublicRoute = PublicRouteImport.update({
+  id: '/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAppointmentsRoute =
   AuthenticatedAppointmentsRouteImport.update({
     id: '/appointments',
     path: '/appointments',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedAvailabilityRoute =
-  AuthenticatedAvailabilityRouteImport.update({
-    id: '/availability',
-    path: '/availability',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -60,93 +54,105 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedPatientsIdRoute = AuthenticatedPatientsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AuthenticatedPatientsRoute,
-} as any)
+const AuthenticatedAiToolsIndexRoute =
+  AuthenticatedAiToolsIndexRouteImport.update({
+    id: '/ai-tools/',
+    path: '/ai-tools/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAiToolsFattyLiverAssessmentRoute =
+  AuthenticatedAiToolsFattyLiverAssessmentRouteImport.update({
+    id: '/ai-tools/fatty-liver-assessment',
+    path: '/ai-tools/fatty-liver-assessment',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAiToolsFattyLiverScanRoute =
+  AuthenticatedAiToolsFattyLiverScanRouteImport.update({
+    id: '/ai-tools/fatty-liver-scan',
+    path: '/ai-tools/fatty-liver-scan',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/': typeof PublicRoute
+  '/sign-in': typeof SignInRoute
   '/appointments': typeof AuthenticatedAppointmentsRoute
-  '/availability': typeof AuthenticatedAvailabilityRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/patients': typeof AuthenticatedPatientsRouteWithChildren
+  '/patients': typeof AuthenticatedPatientsRoute
   '/profile': typeof AuthenticatedProfileRoute
-  '/patients/$id': typeof AuthenticatedPatientsIdRoute
+  '/ai-tools/fatty-liver-assessment': typeof AuthenticatedAiToolsFattyLiverAssessmentRoute
+  '/ai-tools/fatty-liver-scan': typeof AuthenticatedAiToolsFattyLiverScanRoute
+  '/ai-tools/': typeof AuthenticatedAiToolsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/': typeof PublicRoute
+  '/sign-in': typeof SignInRoute
   '/appointments': typeof AuthenticatedAppointmentsRoute
-  '/availability': typeof AuthenticatedAvailabilityRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/patients': typeof AuthenticatedPatientsRouteWithChildren
+  '/patients': typeof AuthenticatedPatientsRoute
   '/profile': typeof AuthenticatedProfileRoute
-  '/patients/$id': typeof AuthenticatedPatientsIdRoute
+  '/ai-tools/fatty-liver-assessment': typeof AuthenticatedAiToolsFattyLiverAssessmentRoute
+  '/ai-tools/fatty-liver-scan': typeof AuthenticatedAiToolsFattyLiverScanRoute
+  '/ai-tools': typeof AuthenticatedAiToolsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/auth': typeof AuthRoute
+  '/_public': typeof PublicRoute
+  '/sign-in': typeof SignInRoute
   '/_authenticated/appointments': typeof AuthenticatedAppointmentsRoute
-  '/_authenticated/availability': typeof AuthenticatedAvailabilityRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/patients': typeof AuthenticatedPatientsRouteWithChildren
+  '/_authenticated/patients': typeof AuthenticatedPatientsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
-  '/_authenticated/patients/$id': typeof AuthenticatedPatientsIdRoute
+  '/_authenticated/ai-tools/fatty-liver-assessment': typeof AuthenticatedAiToolsFattyLiverAssessmentRoute
+  '/_authenticated/ai-tools/fatty-liver-scan': typeof AuthenticatedAiToolsFattyLiverScanRoute
+  '/_authenticated/ai-tools/': typeof AuthenticatedAiToolsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/auth'
+    | '/sign-in'
     | '/appointments'
-    | '/availability'
     | '/dashboard'
     | '/patients'
     | '/profile'
-    | '/patients/$id'
+    | '/ai-tools/fatty-liver-assessment'
+    | '/ai-tools/fatty-liver-scan'
+    | '/ai-tools/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/auth'
+    | '/sign-in'
     | '/appointments'
-    | '/availability'
     | '/dashboard'
     | '/patients'
     | '/profile'
-    | '/patients/$id'
+    | '/ai-tools/fatty-liver-assessment'
+    | '/ai-tools/fatty-liver-scan'
+    | '/ai-tools'
   id:
     | '__root__'
-    | '/'
     | '/_authenticated'
-    | '/auth'
+    | '/_public'
+    | '/sign-in'
     | '/_authenticated/appointments'
-    | '/_authenticated/availability'
     | '/_authenticated/dashboard'
     | '/_authenticated/patients'
     | '/_authenticated/profile'
-    | '/_authenticated/patients/$id'
+    | '/_authenticated/ai-tools/fatty-liver-assessment'
+    | '/_authenticated/ai-tools/fatty-liver-scan'
+    | '/_authenticated/ai-tools/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
-  AuthRoute: typeof AuthRoute
+  PublicRoute: typeof PublicRoute
+  SignInRoute: typeof SignInRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -154,11 +160,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/appointments': {
@@ -166,13 +179,6 @@ declare module '@tanstack/react-router' {
       path: '/appointments'
       fullPath: '/appointments'
       preLoaderRoute: typeof AuthenticatedAppointmentsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/availability': {
-      id: '/_authenticated/availability'
-      path: '/availability'
-      fullPath: '/availability'
-      preLoaderRoute: typeof AuthenticatedAvailabilityRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
@@ -196,43 +202,50 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/patients/$id': {
-      id: '/_authenticated/patients/$id'
-      path: '/$id'
-      fullPath: '/patients/$id'
-      preLoaderRoute: typeof AuthenticatedPatientsIdRouteImport
-      parentRoute: typeof AuthenticatedPatientsRoute
+    '/_authenticated/ai-tools/': {
+      id: '/_authenticated/ai-tools/'
+      path: '/ai-tools'
+      fullPath: '/ai-tools/'
+      preLoaderRoute: typeof AuthenticatedAiToolsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/ai-tools/fatty-liver-assessment': {
+      id: '/_authenticated/ai-tools/fatty-liver-assessment'
+      path: '/ai-tools/fatty-liver-assessment'
+      fullPath: '/ai-tools/fatty-liver-assessment'
+      preLoaderRoute: typeof AuthenticatedAiToolsFattyLiverAssessmentRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/ai-tools/fatty-liver-scan': {
+      id: '/_authenticated/ai-tools/fatty-liver-scan'
+      path: '/ai-tools/fatty-liver-scan'
+      fullPath: '/ai-tools/fatty-liver-scan'
+      preLoaderRoute: typeof AuthenticatedAiToolsFattyLiverScanRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
   }
 }
 
-interface AuthenticatedPatientsRouteChildren {
-  AuthenticatedPatientsIdRoute: typeof AuthenticatedPatientsIdRoute
-}
-
-const AuthenticatedPatientsRouteChildren: AuthenticatedPatientsRouteChildren = {
-  AuthenticatedPatientsIdRoute: AuthenticatedPatientsIdRoute,
-}
-
-const AuthenticatedPatientsRouteWithChildren =
-  AuthenticatedPatientsRoute._addFileChildren(
-    AuthenticatedPatientsRouteChildren,
-  )
-
 interface AuthenticatedRouteChildren {
   AuthenticatedAppointmentsRoute: typeof AuthenticatedAppointmentsRoute
-  AuthenticatedAvailabilityRoute: typeof AuthenticatedAvailabilityRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedPatientsRoute: typeof AuthenticatedPatientsRouteWithChildren
+  AuthenticatedPatientsRoute: typeof AuthenticatedPatientsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedAiToolsFattyLiverAssessmentRoute: typeof AuthenticatedAiToolsFattyLiverAssessmentRoute
+  AuthenticatedAiToolsFattyLiverScanRoute: typeof AuthenticatedAiToolsFattyLiverScanRoute
+  AuthenticatedAiToolsIndexRoute: typeof AuthenticatedAiToolsIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAppointmentsRoute: AuthenticatedAppointmentsRoute,
-  AuthenticatedAvailabilityRoute: AuthenticatedAvailabilityRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedPatientsRoute: AuthenticatedPatientsRouteWithChildren,
+  AuthenticatedPatientsRoute: AuthenticatedPatientsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedAiToolsFattyLiverAssessmentRoute:
+    AuthenticatedAiToolsFattyLiverAssessmentRoute,
+  AuthenticatedAiToolsFattyLiverScanRoute:
+    AuthenticatedAiToolsFattyLiverScanRoute,
+  AuthenticatedAiToolsIndexRoute: AuthenticatedAiToolsIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -240,20 +253,10 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
-  AuthRoute: AuthRoute,
+  PublicRoute: PublicRoute,
+  SignInRoute: SignInRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

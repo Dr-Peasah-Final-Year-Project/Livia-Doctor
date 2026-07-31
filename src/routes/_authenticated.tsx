@@ -1,96 +1,103 @@
-import { createFileRoute, Outlet, redirect, Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { AppSidebar } from "@/features/dashboard/components/sidebar";
+import { MobileBottomNav } from "@/features/dashboard/components/bottom-nav";
+import { UserAvatar } from "@/features/dashboard/components/user-avatar";
 import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
-  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger,
-  SidebarHeader, SidebarFooter,
-} from "@/components/ui/sidebar";
-import { LayoutDashboard, Calendar, Users, ClockIcon, UserCircle, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import liviaLogo from "@/assets/livia-logo.svg";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
+import { createFileRoute, Outlet, redirect, useRouter } from "@tanstack/react-router";
+import { LogOut, User } from "lucide-react";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/_authenticated")({
-  ssr: false,
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth" });
-    return { user: data.user };
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      throw redirect({ to: "/sign-in" });
+    }
   },
-  component: AuthedLayout,
+  component: AuthenticatedLayout,
 });
 
-const baseItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Appointments", url: "/appointments", icon: Calendar },
-  { title: "Patients", url: "/patients", icon: Users },
-  { title: "Availability", url: "/availability", icon: ClockIcon },
-  { title: "Profile", url: "/profile", icon: UserCircle },
-] as const;
+function AuthenticatedLayout() {
+  const router = useRouter();
+  const { user, isLoading } = useAuth();
 
-function AuthedLayout() {
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.invalidate();
+    }
+  }, [user, isLoading, router]);
+
+  const avatarUrl = user?.user_metadata?.avatar_url;
+  const displayName = user?.user_metadata?.name ?? "Doctor";
+
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
+    <div className="flex flex-col h-svh">
+      <header className="shrink-0 border-b px-6 py-4 flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-1">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="48"
+              height="48"
+              viewBox="0 0 28 28"
+              className="text-primary shrink-0"
+            >
+              <path
+                fill="currentColor"
+                d="M10.75 2.998A1.75 1.75 0 0 0 9 4.748V9H4.75A1.75 1.75 0 0 0 3 10.75v6.5c0 .966.784 1.75 1.75 1.75H9v4.251c0 .967.784 1.75 1.75 1.75h6.5a1.75 1.75 0 0 0 1.75-1.75V19h4.25A1.75 1.75 0 0 0 25 17.25v-6.5A1.75 1.75 0 0 0 23.25 9H19V4.748a1.75 1.75 0 0 0-1.75-1.75z"
+              />
+            </svg>
+            <span className="font-heading font-medium text-lg whitespace-nowrap tracking-tight">
+              Livia Health&trade;
+            </span>
+          </div>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger className="rounded-full">
+            <UserAvatar src={avatarUrl} seed={user?.id ?? ""} size="lg" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <div className="px-1.5 py-1.5">
+              <p className="text-sm font-medium truncate">{displayName}</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {user?.email}
+              </p>
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => router.navigate({ to: "/profile" })}
+            >
+              <User />
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => supabase.auth.signOut()}
+            >
+              <LogOut />
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </header>
+
+      <div className="flex flex-1 overflow-hidden">
         <AppSidebar />
-        <div className="flex flex-1 flex-col">
-          <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-border bg-card/70 px-4 backdrop-blur">
-            <SidebarTrigger />
-            <div className="text-sm font-medium text-muted-foreground">Livia Health · Doctor Portal</div>
-          </header>
-          <main className="flex-1 p-6">
-            <Outlet />
-          </main>
-        </div>
+        <main className="flex-1 overflow-auto pb-16 md:pb-0">
+          <Outlet />
+        </main>
       </div>
-    </SidebarProvider>
-  );
-}
 
-function AppSidebar() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-
-  async function handleSignOut() {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
-  }
-
-  return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1">
-          <img src={liviaLogo} alt="Livia Health" className="h-8 w-auto" />
-          <div className="text-sm font-semibold group-data-[collapsible=icon]:hidden">Livia Health</div>
-        </div>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {baseItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={pathname === item.url || pathname.startsWith(item.url + "/")}>
-                    <Link to={item.url}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter>
-        <Button variant="ghost" size="sm" onClick={handleSignOut} className="justify-start gap-2">
-          <LogOut className="h-4 w-4" /> <span className="group-data-[collapsible=icon]:hidden">Sign out</span>
-        </Button>
-      </SidebarFooter>
-    </Sidebar>
+      <MobileBottomNav />
+    </div>
   );
 }
