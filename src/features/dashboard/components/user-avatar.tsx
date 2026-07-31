@@ -1,11 +1,8 @@
-import BoringAvatar from "boring-avatars";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
-
-const sizePx = { sm: 24, default: 32, lg: 40 } as const;
 
 interface UserAvatarProps {
   /** Image URL — falls back to a boring avatar when absent */
