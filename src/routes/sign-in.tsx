@@ -6,12 +6,18 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase";
 import { forgotPasswordOtpSchema, forgotPasswordSchema, loginSchema, type ForgotPasswordForm, type ForgotPasswordOtpForm, type LoginForm } from "@/features/auth/services/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { ArrowLeft, Loader, Lock, Eye, EyeOff, Mail } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 export const Route = createFileRoute("/sign-in")({
+  beforeLoad: async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      throw redirect({ to: "/dashboard" });
+    }
+  },
   component: SignInPage,
 });
 
@@ -54,7 +60,10 @@ function SignInPage() {
       setLoginError(error.message);
       return;
     }
-    router.navigate({ to: "/dashboard" });
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      router.navigate({ to: "/dashboard" });
+    }
   }
 
   async function onForgotSubmit(data: ForgotPasswordForm) {
