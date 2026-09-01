@@ -18,7 +18,10 @@ import { Route as AuthenticatedPatientsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedAiToolsIndexRouteImport } from './routes/_authenticated/ai-tools/index'
 import { Route as AuthenticatedAiToolsFattyLiverAssessmentRouteImport } from './routes/_authenticated/ai-tools/fatty-liver-assessment'
-import { Route as AuthenticatedAiToolsFattyLiverScanRouteImport } from './routes/_authenticated/ai-tools/fatty-liver-scan'
+import { Route as AuthenticatedAiToolsLiverFibrosisRouteImport } from './routes/_authenticated/ai-tools/liver/fibrosis'
+import { Route as AuthenticatedAiToolsLiverPredictRouteImport } from './routes/_authenticated/ai-tools/liver/predict'
+import { Route as AuthenticatedAiToolsLiverSmcLudRouteImport } from './routes/_authenticated/ai-tools/liver/smc-lud'
+import { Route as AuthenticatedAiToolsLiverSteatosisRouteImport } from './routes/_authenticated/ai-tools/liver/steatosis'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
@@ -66,10 +69,28 @@ const AuthenticatedAiToolsFattyLiverAssessmentRoute =
     path: '/ai-tools/fatty-liver-assessment',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedAiToolsFattyLiverScanRoute =
-  AuthenticatedAiToolsFattyLiverScanRouteImport.update({
-    id: '/ai-tools/fatty-liver-scan',
-    path: '/ai-tools/fatty-liver-scan',
+const AuthenticatedAiToolsLiverFibrosisRoute =
+  AuthenticatedAiToolsLiverFibrosisRouteImport.update({
+    id: '/ai-tools/liver/fibrosis',
+    path: '/ai-tools/liver/fibrosis',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAiToolsLiverPredictRoute =
+  AuthenticatedAiToolsLiverPredictRouteImport.update({
+    id: '/ai-tools/liver/predict',
+    path: '/ai-tools/liver/predict',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAiToolsLiverSmcLudRoute =
+  AuthenticatedAiToolsLiverSmcLudRouteImport.update({
+    id: '/ai-tools/liver/smc-lud',
+    path: '/ai-tools/liver/smc-lud',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAiToolsLiverSteatosisRoute =
+  AuthenticatedAiToolsLiverSteatosisRouteImport.update({
+    id: '/ai-tools/liver/steatosis',
+    path: '/ai-tools/liver/steatosis',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 
@@ -81,8 +102,11 @@ export interface FileRoutesByFullPath {
   '/patients': typeof AuthenticatedPatientsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/ai-tools/fatty-liver-assessment': typeof AuthenticatedAiToolsFattyLiverAssessmentRoute
-  '/ai-tools/fatty-liver-scan': typeof AuthenticatedAiToolsFattyLiverScanRoute
   '/ai-tools/': typeof AuthenticatedAiToolsIndexRoute
+  '/ai-tools/liver/fibrosis': typeof AuthenticatedAiToolsLiverFibrosisRoute
+  '/ai-tools/liver/predict': typeof AuthenticatedAiToolsLiverPredictRoute
+  '/ai-tools/liver/smc-lud': typeof AuthenticatedAiToolsLiverSmcLudRoute
+  '/ai-tools/liver/steatosis': typeof AuthenticatedAiToolsLiverSteatosisRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PublicRoute
@@ -92,8 +116,11 @@ export interface FileRoutesByTo {
   '/patients': typeof AuthenticatedPatientsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/ai-tools/fatty-liver-assessment': typeof AuthenticatedAiToolsFattyLiverAssessmentRoute
-  '/ai-tools/fatty-liver-scan': typeof AuthenticatedAiToolsFattyLiverScanRoute
   '/ai-tools': typeof AuthenticatedAiToolsIndexRoute
+  '/ai-tools/liver/fibrosis': typeof AuthenticatedAiToolsLiverFibrosisRoute
+  '/ai-tools/liver/predict': typeof AuthenticatedAiToolsLiverPredictRoute
+  '/ai-tools/liver/smc-lud': typeof AuthenticatedAiToolsLiverSmcLudRoute
+  '/ai-tools/liver/steatosis': typeof AuthenticatedAiToolsLiverSteatosisRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -105,8 +132,11 @@ export interface FileRoutesById {
   '/_authenticated/patients': typeof AuthenticatedPatientsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/ai-tools/fatty-liver-assessment': typeof AuthenticatedAiToolsFattyLiverAssessmentRoute
-  '/_authenticated/ai-tools/fatty-liver-scan': typeof AuthenticatedAiToolsFattyLiverScanRoute
   '/_authenticated/ai-tools/': typeof AuthenticatedAiToolsIndexRoute
+  '/_authenticated/ai-tools/liver/fibrosis': typeof AuthenticatedAiToolsLiverFibrosisRoute
+  '/_authenticated/ai-tools/liver/predict': typeof AuthenticatedAiToolsLiverPredictRoute
+  '/_authenticated/ai-tools/liver/smc-lud': typeof AuthenticatedAiToolsLiverSmcLudRoute
+  '/_authenticated/ai-tools/liver/steatosis': typeof AuthenticatedAiToolsLiverSteatosisRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -118,8 +148,11 @@ export interface FileRouteTypes {
     | '/patients'
     | '/profile'
     | '/ai-tools/fatty-liver-assessment'
-    | '/ai-tools/fatty-liver-scan'
     | '/ai-tools/'
+    | '/ai-tools/liver/fibrosis'
+    | '/ai-tools/liver/predict'
+    | '/ai-tools/liver/smc-lud'
+    | '/ai-tools/liver/steatosis'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -129,8 +162,11 @@ export interface FileRouteTypes {
     | '/patients'
     | '/profile'
     | '/ai-tools/fatty-liver-assessment'
-    | '/ai-tools/fatty-liver-scan'
     | '/ai-tools'
+    | '/ai-tools/liver/fibrosis'
+    | '/ai-tools/liver/predict'
+    | '/ai-tools/liver/smc-lud'
+    | '/ai-tools/liver/steatosis'
   id:
     | '__root__'
     | '/_authenticated'
@@ -141,8 +177,11 @@ export interface FileRouteTypes {
     | '/_authenticated/patients'
     | '/_authenticated/profile'
     | '/_authenticated/ai-tools/fatty-liver-assessment'
-    | '/_authenticated/ai-tools/fatty-liver-scan'
     | '/_authenticated/ai-tools/'
+    | '/_authenticated/ai-tools/liver/fibrosis'
+    | '/_authenticated/ai-tools/liver/predict'
+    | '/_authenticated/ai-tools/liver/smc-lud'
+    | '/_authenticated/ai-tools/liver/steatosis'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -216,11 +255,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAiToolsFattyLiverAssessmentRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/ai-tools/fatty-liver-scan': {
-      id: '/_authenticated/ai-tools/fatty-liver-scan'
-      path: '/ai-tools/fatty-liver-scan'
-      fullPath: '/ai-tools/fatty-liver-scan'
-      preLoaderRoute: typeof AuthenticatedAiToolsFattyLiverScanRouteImport
+    '/_authenticated/ai-tools/liver/fibrosis': {
+      id: '/_authenticated/ai-tools/liver/fibrosis'
+      path: '/ai-tools/liver/fibrosis'
+      fullPath: '/ai-tools/liver/fibrosis'
+      preLoaderRoute: typeof AuthenticatedAiToolsLiverFibrosisRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/ai-tools/liver/predict': {
+      id: '/_authenticated/ai-tools/liver/predict'
+      path: '/ai-tools/liver/predict'
+      fullPath: '/ai-tools/liver/predict'
+      preLoaderRoute: typeof AuthenticatedAiToolsLiverPredictRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/ai-tools/liver/smc-lud': {
+      id: '/_authenticated/ai-tools/liver/smc-lud'
+      path: '/ai-tools/liver/smc-lud'
+      fullPath: '/ai-tools/liver/smc-lud'
+      preLoaderRoute: typeof AuthenticatedAiToolsLiverSmcLudRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/ai-tools/liver/steatosis': {
+      id: '/_authenticated/ai-tools/liver/steatosis'
+      path: '/ai-tools/liver/steatosis'
+      fullPath: '/ai-tools/liver/steatosis'
+      preLoaderRoute: typeof AuthenticatedAiToolsLiverSteatosisRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
   }
@@ -232,8 +292,11 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPatientsRoute: typeof AuthenticatedPatientsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedAiToolsFattyLiverAssessmentRoute: typeof AuthenticatedAiToolsFattyLiverAssessmentRoute
-  AuthenticatedAiToolsFattyLiverScanRoute: typeof AuthenticatedAiToolsFattyLiverScanRoute
   AuthenticatedAiToolsIndexRoute: typeof AuthenticatedAiToolsIndexRoute
+  AuthenticatedAiToolsLiverFibrosisRoute: typeof AuthenticatedAiToolsLiverFibrosisRoute
+  AuthenticatedAiToolsLiverPredictRoute: typeof AuthenticatedAiToolsLiverPredictRoute
+  AuthenticatedAiToolsLiverSmcLudRoute: typeof AuthenticatedAiToolsLiverSmcLudRoute
+  AuthenticatedAiToolsLiverSteatosisRoute: typeof AuthenticatedAiToolsLiverSteatosisRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -243,9 +306,13 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedAiToolsFattyLiverAssessmentRoute:
     AuthenticatedAiToolsFattyLiverAssessmentRoute,
-  AuthenticatedAiToolsFattyLiverScanRoute:
-    AuthenticatedAiToolsFattyLiverScanRoute,
   AuthenticatedAiToolsIndexRoute: AuthenticatedAiToolsIndexRoute,
+  AuthenticatedAiToolsLiverFibrosisRoute:
+    AuthenticatedAiToolsLiverFibrosisRoute,
+  AuthenticatedAiToolsLiverPredictRoute: AuthenticatedAiToolsLiverPredictRoute,
+  AuthenticatedAiToolsLiverSmcLudRoute: AuthenticatedAiToolsLiverSmcLudRoute,
+  AuthenticatedAiToolsLiverSteatosisRoute:
+    AuthenticatedAiToolsLiverSteatosisRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

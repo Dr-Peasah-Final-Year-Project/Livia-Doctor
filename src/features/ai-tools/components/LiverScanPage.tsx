@@ -1,18 +1,67 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useRef } from "react";
+import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Upload, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { predictFromImage } from "@/features/ai-tools/services/prediction";
-import type { PredictionResult } from "@/features/ai-tools/services/prediction";
+import type { ModelResult, SingleModelResult, LiverPredictionResult } from "../services/prediction";
 
-export const Route = createFileRoute("/_authenticated/ai-tools/fatty-liver-scan")({
-  component: FattyLiverScanPage,
-});
+interface LiverScanPageProps {
+  title: string;
+  description: string;
+  predictFn: (file: File) => Promise<SingleModelResult | LiverPredictionResult>;
+  showAllResults?: boolean;
+  backTo?: string;
+}
 
-function FattyLiverScanPage() {
+function ModelResultCard({ label, result }: { label: string; result: SingleModelResult | ModelResult }) {
+  const isPositive = result.confidence > 0.5;
+  
+  return (
+    <div className="border rounded-lg p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="font-heading font-medium">{label}</h3>
+        <span className={`text-sm font-medium ${isPositive ? "text-amber-600" : "text-emerald-600"}`}>
+          {result.prediction}
+        </span>
+      </div>
+      
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-muted-foreground">Confidence</span>
+          <span className="font-medium">{(result.confidence * 100).toFixed(1)}%</span>
+        </div>
+        <div className="h-2 bg-muted rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full ${isPositive ? "bg-amber-500" : "bg-emerald-500"}`}
+            style={{ width: `${result.confidence * 100}%` }}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-1">
+        <p className="text-xs text-muted-foreground">Probabilities</p>
+        {Object.entries(result.probabilities).map(([cls, prob]) => (
+          <div key={cls} className="flex items-center justify-between text-xs">
+            <span className={cls === result.prediction ? "font-medium" : "text-muted-foreground"}>
+              {cls}
+            </span>
+            <span>{(prob * 100).toFixed(1)}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function LiverScanPage({
+  title,
+  description,
+  predictFn,
+  showAllResults = false,
+  backTo = "/ai-tools",
+}: LiverScanPageProps) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [result, setResult] = useState<PredictionResult | null>(null);
+  const [result, setResult] = useState<SingleModelResult | LiverPredictionResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -60,7 +109,7 @@ function FattyLiverScanPage() {
     setResult(null);
 
     try {
-      const prediction = await predictFromImage(file);
+      const prediction = await predictFn(file);
       setResult(prediction);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Prediction failed");
@@ -69,19 +118,20 @@ function FattyLiverScanPage() {
     }
   }
 
+  const isSingleResult = result && "model" in result;
+  const isAllResults = result && !("model" in result);
+
   return (
     <div className="py-10 px-8 space-y-6 bg-accent min-h-full">
       <div className="flex items-center gap-3">
-        <Link to="/ai-tools">
+        <Link to={backTo}>
           <Button variant="ghost" size="icon-sm">
             <ArrowLeft className="size-4" />
           </Button>
         </Link>
         <div>
-          <h1 className="font-heading text-2xl">Fatty Liver Detector</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Upload a liver ultrasound scan for AI analysis
-          </p>
+          <h1 className="font-heading text-2xl">{title}</h1>
+          <p className="text-muted-foreground mt-1 text-sm">{description}</p>
         </div>
       </div>
 
@@ -155,45 +205,40 @@ function FattyLiverScanPage() {
         <div className="border rounded-lg bg-white p-6">
           <h2 className="font-heading font-medium mb-4">Results</h2>
 
-          {result ? (
+          {isSingleResult && (
             <div className="space-y-4">
               <div
-                className={`rounded-lg p-4 ${result.fattyLiver
-                  ? "bg-amber-500/10 border border-amber-500/20"
-                  : "bg-emerald-500/10 border border-emerald-500/20"
-                  }`}
+                className={`rounded-lg p-4 ${
+                  result.prediction !== "No Steatosis" && result.prediction !== "F0"
+                    ? "bg-amber-500/10 border border-amber-500/20"
+                    : "bg-emerald-500/10 border border-emerald-500/20"
+                }`}
               >
                 <p className="text-sm text-muted-foreground">Diagnosis</p>
                 <p
-                  className={`text-lg font-heading font-medium ${result.fattyLiver ? "text-amber-600" : "text-emerald-600"
-                    }`}
+                  className={`text-lg font-heading font-medium ${
+                    result.prediction !== "No Steatosis" && result.prediction !== "F0"
+                      ? "text-amber-600"
+                      : "text-emerald-600"
+                  }`}
                 >
-                  {result.fattyLiver ? "Fatty Liver Detected" : "No Fatty Liver Detected"}
+                  {result.prediction}
                 </p>
               </div>
 
-              <div className="border rounded-lg p-4">
-                <p className="text-sm text-muted-foreground">Confidence</p>
-                <div className="mt-2 flex items-center gap-3">
-                  <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${result.fattyLiver ? "bg-amber-500" : "bg-emerald-500"
-                        }`}
-                      style={{ width: `${result.probability * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-medium">
-                    {(result.probability * 100).toFixed(1)}%
-                  </span>
-                </div>
-              </div>
-
-              <p className="text-xs text-muted-foreground">
-                Threshold: {(result.threshold * 100).toFixed(0)}% — Values at or
-                above this threshold indicate fatty liver.
-              </p>
+              <ModelResultCard label="Model Result" result={result as SingleModelResult} />
             </div>
-          ) : (
+          )}
+
+          {isAllResults && showAllResults && (
+            <div className="space-y-4">
+              <ModelResultCard label="Steatosis" result={(result as LiverPredictionResult).steatosis} />
+              <ModelResultCard label="Fibrosis" result={(result as LiverPredictionResult).fibrosis} />
+              <ModelResultCard label="SMC-LUD" result={(result as LiverPredictionResult).smc_lud} />
+            </div>
+          )}
+
+          {!result && (
             <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
               <p className="text-sm">Upload a scan and click 'Analyze' to see results</p>
             </div>

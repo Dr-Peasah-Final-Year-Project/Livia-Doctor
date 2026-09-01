@@ -1,31 +1,57 @@
 const API_BASE = import.meta.env.VITE_LIVIA_AI_API_URL as string;
 
-export interface PredictionResult {
-  fattyLiver: boolean;
-  probability: number;
-  threshold: number;
+export interface ModelResult {
+  prediction: string;
+  confidence: number;
+  probabilities: Record<string, number>;
 }
 
-export interface PredictionError {
-  error: string;
+export interface SingleModelResult {
+  prediction: string;
+  confidence: number;
+  probabilities: Record<string, number>;
+  model: string;
 }
 
-export async function predictFromImage(file: File): Promise<PredictionResult> {
-  const response = await fetch(`${API_BASE}/predict`, {
+export interface LiverPredictionResult {
+  steatosis: ModelResult;
+  fibrosis: ModelResult;
+  smc_lud: ModelResult;
+}
+
+async function predictFromFile<T>(endpoint: string, file: File, isLiver: boolean): Promise<T> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const basePath = isLiver ? "/api/ai/liver" : "/api/ai";
+  const response = await fetch(`${API_BASE}${basePath}/${endpoint}`, {
     method: "POST",
-    headers: {
-      "Content-Type": file.type || "image/jpeg",
-    },
-    body: file,
+    body: formData,
   });
 
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || "Prediction failed");
+    throw new Error(data.detail || "Prediction failed");
   }
 
-  return data as PredictionResult;
+  return data as T;
+}
+
+export async function predictSteatosis(file: File): Promise<SingleModelResult> {
+  return predictFromFile<SingleModelResult>("steatosis", file, false);
+}
+
+export async function predictFibrosis(file: File): Promise<SingleModelResult> {
+  return predictFromFile<SingleModelResult>("fibrosis", file, false);
+}
+
+export async function predictSmcLud(file: File): Promise<SingleModelResult> {
+  return predictFromFile<SingleModelResult>("smc-lud", file, false);
+}
+
+export async function predictAll(file: File): Promise<LiverPredictionResult> {
+  return predictFromFile<LiverPredictionResult>("predict", file, true);
 }
 
 export interface Fib4Input {
