@@ -6,7 +6,6 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { UserAvatar } from "@/features/dashboard/components/user-avatar";
 import { getPatientAppointments, formatReason } from "@/features/dashboard/services/appointments";
 import type { Appointment } from "@/features/dashboard/services/appointments";
 import { supabase } from "@/lib/supabase";
