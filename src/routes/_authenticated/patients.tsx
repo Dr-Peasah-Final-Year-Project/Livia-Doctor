@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { supabase } from "@/lib/supabase";
 import { Search } from "lucide-react";
@@ -7,6 +8,7 @@ import { DataTable } from "@/components/ui/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
 import { getPatients, calculateAge } from "@/features/patients/services/patients";
 import type { Patient } from "@/features/patients/services/patients";
+import { PatientVisitHistorySheet } from "@/features/dashboard/components/patient-visit-history-sheet";
 
 export const Route = createFileRoute("/_authenticated/patients")({
   loader: async () => {
@@ -28,54 +30,6 @@ function formatDate(date: string) {
   });
 }
 
-const columns: ColumnDef<Patient, unknown>[] = [
-  {
-    accessorKey: "name",
-    header: "Patient",
-    cell: ({ row }) => {
-      const patient = row.original;
-      return (
-        <div className="flex items-center gap-3">
-          <UserAvatar seed={patient.id} size="lg" />
-          <span className="font-medium">{patient.name}</span>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "phone",
-    header: "Phone",
-    cell: ({ row }) => row.original.phone ?? "-",
-  },
-  {
-    accessorKey: "date_of_birth",
-    header: "Age",
-    cell: ({ row }) => {
-      const dob = row.original.date_of_birth;
-      if (!dob) return "-";
-      return calculateAge(dob);
-    },
-  },
-  {
-    accessorKey: "last_visit",
-    header: "Last Visit",
-    cell: ({ row }) => {
-      const lastVisit = row.original.last_visit;
-      if (!lastVisit) return "-";
-      return formatDate(lastVisit);
-    },
-  },
-  {
-    accessorKey: "appointments_count",
-    header: "Appointments",
-    cell: ({ row }) => (
-      <span className="inline-flex items-center rounded-full bg-primary/10 text-primary px-2.5 py-0.5 text-xs font-medium">
-        {row.original.appointments_count}
-      </span>
-    ),
-  },
-];
-
 function PatientsSkeleton() {
   return (
     <div className="p-6 space-y-6 animate-pulse">
@@ -89,6 +43,80 @@ function PatientsSkeleton() {
 
 function PatientsPage() {
   const patients = Route.useLoaderData();
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const filteredPatients = patients.filter((p) => {
+    const query = search.toLowerCase();
+    return (
+      p.name.toLowerCase().includes(query) ||
+      (p.phone && p.phone.toLowerCase().includes(query))
+    );
+  });
+
+  const columns: ColumnDef<Patient, unknown>[] = [
+    {
+      accessorKey: "name",
+      header: "Patient",
+      cell: ({ row }) => {
+        const patient = row.original;
+        return (
+          <div className="flex items-center gap-3">
+            <UserAvatar seed={patient.id} size="lg" />
+            <span className="font-medium">{patient.name}</span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "phone",
+      header: "Phone",
+      cell: ({ row }) => row.original.phone ?? "-",
+    },
+    {
+      accessorKey: "date_of_birth",
+      header: "Age",
+      cell: ({ row }) => {
+        const dob = row.original.date_of_birth;
+        if (!dob) return "-";
+        return calculateAge(dob);
+      },
+    },
+    {
+      accessorKey: "last_visit",
+      header: "Last Visit",
+      cell: ({ row }) => {
+        const lastVisit = row.original.last_visit;
+        if (!lastVisit) return "-";
+        return formatDate(lastVisit);
+      },
+    },
+    {
+      accessorKey: "appointments_count",
+      header: "Appointments",
+      cell: ({ row }) => (
+        <span className="inline-flex items-center rounded-full bg-primary/10 text-primary px-2.5 py-0.5 text-xs font-medium">
+          {row.original.appointments_count}
+        </span>
+      ),
+    },
+    {
+      id: "action",
+      header: "Action",
+      cell: ({ row }) => (
+        <button
+          onClick={() => {
+            setSelectedPatient(row.original);
+            setSheetOpen(true);
+          }}
+          className="text-sm text-primary hover:underline"
+        >
+          View History
+        </button>
+      ),
+    },
+  ];
 
   return (
     <div className="p-6 space-y-6">
@@ -104,10 +132,21 @@ function PatientsPage() {
         <Input
           placeholder="Search patients..."
           className="pl-9"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
         />
       </div>
 
-      <DataTable columns={columns} data={patients} />
+      <DataTable columns={columns} data={filteredPatients} />
+
+      {selectedPatient && (
+        <PatientVisitHistorySheet
+          patientId={selectedPatient.id}
+          patientName={selectedPatient.name}
+          open={sheetOpen}
+          onOpenChange={setSheetOpen}
+        />
+      )}
     </div>
   );
 }

@@ -14,6 +14,14 @@ export interface Appointment {
   patient_phone: string | null;
 }
 
+export function formatReason(reason: string | null): string {
+  if (!reason) return "-";
+  return reason
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 function calculateAge(dob: string): number {
   const birth = new Date(dob);
   const today = new Date();
@@ -84,6 +92,24 @@ export async function updateAppointment(
     .eq("id", appointmentId);
 
   if (error) throw error;
+}
+
+export async function getPatientAppointments(
+  doctorId: string,
+  patientId: string
+): Promise<Appointment[]> {
+  const { data, error } = await supabase
+    .from("appointments")
+    .select(
+      `id, patient_id, appointment_date, start_time, end_time, status, notes, reason, patient:patient_id(name, date_of_birth, phone)`
+    )
+    .eq("doctor_id", doctorId)
+    .eq("patient_id", patientId)
+    .order("appointment_date", { ascending: false })
+    .order("start_time", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []).map(mapRow);
 }
 
 export async function getAppointmentStatusCounts(
@@ -170,4 +196,51 @@ export async function getPatientCountsByPeriod(
   }));
 
   return { weekly, monthly };
+}
+
+export interface RevenueData {
+  label: string;
+  revenue: number;
+}
+
+export async function getMonthlyRevenue(doctorId: string): Promise<RevenueData[]> {
+  const { data: profile, error: profileError } = await supabase
+    .from("user_profiles")
+    .select("specialty_id, doctor_specialties(base_rate)")
+    .eq("id", doctorId)
+    .single();
+
+  if (profileError) throw profileError;
+
+  const baseRate = (profile as any).doctor_specialties?.base_rate ?? 0;
+
+  const now = new Date();
+  const yearStart = new Date(now.getFullYear(), 0, 1);
+  const yearEnd = new Date(now.getFullYear(), 11, 31);
+
+  const { data: appointments, error } = await supabase
+    .from("appointments")
+    .select("appointment_date")
+    .eq("doctor_id", doctorId)
+    .eq("status", "completed")
+    .gte("appointment_date", yearStart.toISOString().split("T")[0])
+    .lte("appointment_date", yearEnd.toISOString().split("T")[0]);
+
+  if (error) throw error;
+
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const countsByMonth: Record<string, number> = {};
+  for (const name of monthNames) {
+    countsByMonth[name] = 0;
+  }
+
+  for (const apt of appointments ?? []) {
+    const monthIndex = new Date(apt.appointment_date + "T00:00:00").getMonth();
+    countsByMonth[monthNames[monthIndex]]++;
+  }
+
+  return monthNames.map((name) => ({
+    label: name,
+    revenue: countsByMonth[name] * baseRate,
+  }));
 }

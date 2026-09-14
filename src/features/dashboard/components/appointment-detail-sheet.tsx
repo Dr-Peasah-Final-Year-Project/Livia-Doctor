@@ -8,14 +8,13 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/features/dashboard/components/user-avatar";
-import { updateAppointment } from "@/features/dashboard/services/appointments";
+import { updateAppointment, formatReason } from "@/features/dashboard/services/appointments";
 import type { Appointment } from "@/features/dashboard/services/appointments";
 import { toast } from "sonner";
 
 const STATUS_OPTIONS = [
   { value: "scheduled", label: "Scheduled" },
   { value: "completed", label: "Completed" },
-  { value: "cancelled", label: "Cancelled" },
   { value: "no_show", label: "No Show" },
   { value: "needs_review", label: "Needs Review" },
 ] as const;
@@ -51,6 +50,7 @@ interface AppointmentDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onStatusChange?: () => void;
+  onSave?: (updated: Appointment) => void;
 }
 
 export function AppointmentDetailSheet({
@@ -58,6 +58,7 @@ export function AppointmentDetailSheet({
   open,
   onOpenChange,
   onStatusChange,
+  onSave,
 }: AppointmentDetailSheetProps) {
   const [status, setStatus] = useState("");
   const [notes, setNotes] = useState("");
@@ -72,6 +73,8 @@ export function AppointmentDetailSheet({
 
   if (!appointment) return null;
 
+  const isCancelled = appointment.status === "cancelled";
+
   const hasChanges =
     status !== appointment.status || notes !== (appointment.notes ?? "");
 
@@ -79,6 +82,7 @@ export function AppointmentDetailSheet({
     setIsSaving(true);
     try {
       await updateAppointment(appointment.id, { status, notes });
+      onSave?.({ ...appointment, status, notes });
       toast.success("Appointment updated");
       onStatusChange?.();
       onOpenChange(false);
@@ -122,7 +126,8 @@ export function AppointmentDetailSheet({
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                className="text-xs font-medium px-2.5 py-1 rounded-full border cursor-pointer focus:ring-2 focus:ring-ring bg-background"
+                  disabled={isCancelled}
+                  className="text-xs font-medium px-2.5 py-1 rounded-full border cursor-pointer focus:ring-2 focus:ring-ring bg-background disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {STATUS_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -157,7 +162,7 @@ export function AppointmentDetailSheet({
             <div className="space-y-3">
               <div>
                 <span className="text-sm text-muted-foreground">Reason</span>
-                <p className="text-sm mt-1">{appointment.reason ?? "No reason provided"}</p>
+                <p className="text-sm mt-1">{appointment.reason ? formatReason(appointment.reason) : "No reason provided"}</p>
               </div>
               <div>
                 <span className="text-sm text-muted-foreground">Notes</span>

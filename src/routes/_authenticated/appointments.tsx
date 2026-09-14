@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabase } from "@/lib/supabase";
 import { Ellipsis } from "lucide-react";
 import { UserAvatar } from "@/features/dashboard/components/user-avatar";
-import { getAllAppointments } from "@/features/dashboard/services/appointments";
+import { getAllAppointments, formatReason } from "@/features/dashboard/services/appointments";
 import type { Appointment } from "@/features/dashboard/services/appointments";
 import { DataTable } from "@/components/ui/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -123,7 +123,7 @@ function AppointmentsPage() {
     {
       accessorKey: "reason",
       header: "Reason",
-      cell: ({ row }) => row.original.reason ?? "-",
+      cell: ({ row }) => formatReason(row.original.reason),
     },
     {
       accessorKey: "patient_age",
@@ -168,6 +168,11 @@ function AppointmentsPage() {
     },
   ];
 
+  const handleSave = (updated: Appointment) => {
+    setData((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+    setSelectedAppointment(updated);
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -182,6 +187,7 @@ function AppointmentsPage() {
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         onStatusChange={handleStatusChange}
+        onSave={handleSave}
       />
     </div>
   );

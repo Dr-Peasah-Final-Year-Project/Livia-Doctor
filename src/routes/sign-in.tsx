@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase";
 import { forgotPasswordOtpSchema, forgotPasswordSchema, loginSchema, type ForgotPasswordForm, type ForgotPasswordOtpForm, type LoginForm } from "@/features/auth/services/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router";
 import { ArrowLeft, Loader, Lock, Eye, EyeOff, Mail } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -93,21 +93,23 @@ function SignInPage() {
   return (
     <div className="w-full min-h-screen grid grid-cols-7">
       <div className="col-span-7 md:col-span-3 p-8 flex flex-col">
-        <header className="flex items-center gap-1">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="32"
-            height="32"
-            viewBox="0 0 28 28"
-            className="text-primary"
-          >
-            <path
-              fill="currentColor"
-              d="M10.75 2.998A1.75 1.75 0 0 0 9 4.748V9H4.75A1.75 1.75 0 0 0 3 10.75v6.5c0 .966.784 1.75 1.75 1.75H9v4.251c0 .967.784 1.75 1.75 1.75h6.5a1.75 1.75 0 0 0 1.75-1.75V19h4.25A1.75 1.75 0 0 0 25 17.25v-6.5A1.75 1.75 0 0 0 23.25 9H19V4.748a1.75 1.75 0 0 0-1.75-1.75z"
-            />
-          </svg>
-          <h1 className="text-xl font-bold text-primary">Livia Health</h1>
-        </header>
+        <Link to="/">
+          <header className="flex items-center gap-1">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="32"
+              height="32"
+              viewBox="0 0 28 28"
+              className="text-primary"
+            >
+              <path
+                fill="currentColor"
+                d="M10.75 2.998A1.75 1.75 0 0 0 9 4.748V9H4.75A1.75 1.75 0 0 0 3 10.75v6.5c0 .966.784 1.75 1.75 1.75H9v4.251c0 .967.784 1.75 1.75 1.75h6.5a1.75 1.75 0 0 0 1.75-1.75V19h4.25A1.75 1.75 0 0 0 25 17.25v-6.5A1.75 1.75 0 0 0 23.25 9H19V4.748a1.75 1.75 0 0 0-1.75-1.75z"
+              />
+            </svg>
+            <h1 className="text-xl font-bold text-primary">Livia Health</h1>
+          </header>
+        </Link>
 
         <main className="flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-sm space-y-8">

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabase } from "@/lib/supabase";
-import { getRecentAppointments, getAppointmentStatusCounts, getPatientCountsByPeriod } from "@/features/dashboard/services/appointments";
+import { getRecentAppointments, getAppointmentStatusCounts, getPatientCountsByPeriod, getMonthlyRevenue, formatReason } from "@/features/dashboard/services/appointments";
 import type { Appointment } from "@/features/dashboard/services/appointments";
 import { useAuth } from "@/lib/auth";
 import { Banknote, CalendarDays, ChartLine, ChevronRight, Ellipsis } from "lucide-react";
@@ -16,19 +16,21 @@ import { useState } from "react";
 import { DataTable } from "@/components/ui/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
+import { AppointmentDetailSheet } from "@/features/dashboard/components/appointment-detail-sheet";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   loader: async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return { appointments: [], statusCounts: {}, patientPeriodData: { weekly: [], monthly: [] } };
-    const [appointments, statusCounts, patientPeriodData] = await Promise.all([
+    if (!user) return { appointments: [], statusCounts: {}, patientPeriodData: { weekly: [], monthly: [] }, revenueData: [] };
+    const [appointments, statusCounts, patientPeriodData, revenueData] = await Promise.all([
       getRecentAppointments(user.id),
       getAppointmentStatusCounts(user.id),
       getPatientCountsByPeriod(user.id),
+      getMonthlyRevenue(user.id),
     ]);
-    return { appointments, statusCounts, patientPeriodData };
+    return { appointments, statusCounts, patientPeriodData, revenueData };
   },
   component: DashboardPage,
   pendingComponent: DashboardSkeleton,
@@ -49,8 +51,15 @@ function DashboardSkeleton() {
 }
 
 function DashboardPage() {
-  const { appointments, statusCounts, patientPeriodData } = Route.useLoaderData();
+  const { appointments, statusCounts, patientPeriodData, revenueData } = Route.useLoaderData();
   const { user } = useAuth();
+
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  const handleSave = (updated: Appointment) => {
+    setSelectedAppointment(updated);
+  };
 
   const displayName = user?.user_metadata?.name ?? "Doctor";
 
@@ -87,20 +96,6 @@ function DashboardPage() {
   };
   const [period, setPeriod] = useState<Period>("weekly");
 
-  const revenueData = [
-    { label: "Jan", revenue: 5200 },
-    { label: "Feb", revenue: 4800 },
-    { label: "Mar", revenue: 6100 },
-    { label: "Apr", revenue: 5700 },
-    { label: "May", revenue: 7200 },
-    { label: "Jun", revenue: 6800 },
-    { label: "Jul", revenue: 7900 },
-    { label: "Aug", revenue: 7400 },
-    { label: "Sep", revenue: 6300 },
-    { label: "Oct", revenue: 8500 },
-    { label: "Nov", revenue: 9200 },
-    { label: "Dec", revenue: 9800 },
-  ];
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   function formatTime(time: string) {
@@ -160,7 +155,7 @@ function DashboardPage() {
     {
       accessorKey: "reason",
       header: "Reason",
-      cell: ({ row }) => row.original.reason ?? "-",
+      cell: ({ row }) => formatReason(row.original.reason),
     },
     {
       accessorKey: "patient_age",
@@ -190,13 +185,18 @@ function DashboardPage() {
     {
       id: "action",
       header: "Action",
-      cell: () => (
+      cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger className="p-1 rounded-md hover:bg-muted">
             <Ellipsis className="size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>View Details</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              setSelectedAppointment(row.original);
+              setSheetOpen(true);
+            }}>
+              View Details
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ),
@@ -276,17 +276,17 @@ function DashboardPage() {
             </div>
 
             <div className="flex gap-1">
-              {(["weekly", "monthly"] as Period[]).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setPeriod(p)}
-                  className={`text-[0.6rem] px-1 py-0.5 rounded-sm capitalize ${period === p
-                    ? "bg-white text-primary border border-primary"
-                    : "text-muted-foreground hover:bg-accent"
-                    }`}
-                >
-                  {p}
-                </button>
+                {(["weekly", "monthly"] as Period[]).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPeriod(p)}
+                    className={`text-[0.6rem] px-1 py-0.5 rounded-sm ${period === p
+                      ? "bg-white text-primary border border-primary"
+                      : "text-muted-foreground hover:bg-accent"
+                      }`}
+                  >
+                    {p === "weekly" ? "This Week" : "This Month"}
+                  </button>
               ))}
             </div>
           </div>
@@ -334,7 +334,7 @@ function DashboardPage() {
             <div className="flex items-center gap-2">
               <Banknote className="size-5 text-primary" />
               <span className="">
-                Revenue
+                Earnings
               </span>
             </div>
           </div>
@@ -349,11 +349,17 @@ function DashboardPage() {
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} interval={0} />
-              <YAxis domain={[0, 10000]} ticks={[0, 2000, 4000, 6000, 8000, 10000]} tickFormatter={(v) => v === 0 ? "0" : `${v / 1000}K`} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis
+                ticks={[0, 50, 100, 150, 200, 250, 300]}
+                tickFormatter={(v) => `${v}`}
+                tick={{ fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
               <Tooltip contentStyle={{ fontSize: 12 }}
                 itemStyle={{ fontSize: 12 }}
                 labelStyle={{ fontSize: 12 }}
-                formatter={(value) => [`GHS ${(Number(value) / 1000).toFixed(1)}K`, "Revenue"]}
+                formatter={(value) => [`GHS ${Number(value).toLocaleString()}`, "Earnings"]}
                 cursor={false}
               />
               <Area
@@ -388,6 +394,13 @@ function DashboardPage() {
         </div>
         <DataTable columns={columns} data={recentAppointments} />
       </div>
+
+      <AppointmentDetailSheet
+        appointment={selectedAppointment}
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        onSave={handleSave}
+      />
     </div >
   );
 }

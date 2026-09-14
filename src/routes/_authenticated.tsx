@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
-import { createFileRoute, Outlet, redirect, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, redirect, useRouter } from "@tanstack/react-router";
 import { LogOut, User } from "lucide-react";
 import { useEffect } from "react";
 
@@ -42,7 +42,7 @@ function AuthenticatedLayout() {
   return (
     <div className="flex flex-col h-svh">
       <header className="shrink-0 border-b px-6 py-4 flex items-center justify-between">
-        <div>
+        <Link to="/">
           <div className="flex items-center gap-1">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -60,7 +60,7 @@ function AuthenticatedLayout() {
               Livia Health&trade;
             </span>
           </div>
-        </div>
+        </Link>
         <DropdownMenu>
           <DropdownMenuTrigger className="rounded-full">
             <UserAvatar src={avatarUrl} seed={user?.id ?? ""} size="lg" />
